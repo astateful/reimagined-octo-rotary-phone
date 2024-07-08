@@ -1,0 +1,30 @@
+{
+  "name": "backend-api",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "The resources REST server.",
+  "license": "UNLICENSED",
+  "repository": "https://bitbucket.org/personly/personly",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node ./bin/run.js"
+  },
+  "ava": {
+    "files": [
+      "tests/**"
+    ],
+    "failFast": true,
+    "failWithoutAssertions": false
+  },
+  "dependencies": {
+    "@koa/cors": "^5.0.0",
+    "@koa/multer": "^3.0.2",
+    "@koa/router": "12.0.1",
+    "koa": "2.15.3"
+  },
+  "devDependencies": {
+    "ava": "6.1.3",
+    "c8": "9.1.0"
+  },
+  "private": true
+}

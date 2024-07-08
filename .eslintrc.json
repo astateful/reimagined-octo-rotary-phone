@@ -1,0 +1,32 @@
+{
+  "env": {
+    "es6": true
+  },
+  "root": true,
+  "extends": [
+    "eslint:recommended",
+    "plugin:promise/recommended",
+    "plugin:prettier/recommended",
+    "next",
+    "prettier"
+  ],
+  "plugins": [
+    "sort-exports"
+  ],
+  "settings": {
+    "next": {
+      "rootDir": "./frontend/**/src"
+    }
+  },
+  "ignorePatterns": [
+    "**/frontend/**/build/**",
+    "**/node_modules/**"
+  ],
+  "rules": {
+    "prettier/prettier": ["error", { "trailingComma": "es5", "singleQuote": true }],
+    "promise/catch-or-return": ["error", { "terminationMethod": ["finally"] }],
+    "react/prop-types": ["error"],
+    "sort-imports": ["error", { "allowSeparatedGroups": true }],
+    "sort-exports/sort-exports": ["error", { "sortDir": "asc" }]
+  }
+}

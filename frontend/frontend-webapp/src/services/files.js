@@ -18,27 +18,37 @@ const reducer = (state = initialState, action) => {
   }
 };
 
+const makeEndpoint = (pathname) =>
+  `${process.env.NEXT_PUBLIC_API_URL}${pathname}`;
+
+const requestor = async (pathname, options) => {
+  const response = await fetch(makeEndpoint(pathname), options);
+
+  if (response.ok) return response.json();
+
+  if (response.status >= 400 && response.status < 500) {
+    const message = await response.text();
+    throw new Error(`Client Error: ${message}`);
+  }
+
+  throw new Error(`Server Error: Unknown error occurred`);
+};
+
 const useFiles = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const createFile = useCallback((file, cb) => {
+  const createFile = useCallback((file) => {
     (async () => {
-      const formData = new FormData();
-      formData.append('file', file);
-
       try {
-        const response = await fetch('http://localhost:3010/v1/files', {
-          method: 'POST',
-          body: formData,
-        });
+        const formData = new FormData();
+        formData.append('file', file);
 
-        const { result } = await response.json();
+        const options = { method: 'POST', body: formData };
+        const response = await requestor('/files', options);
 
-        dispatch({ type: 'FILE_CREATED', data: result });
-
-        cb(result);
+        dispatch({ type: 'FILE_CREATED', data: response.result });
       } catch (e) {
-        console.error(e);
+        alert(e.message);
       }
     })();
   }, []);
@@ -46,15 +56,12 @@ const useFiles = () => {
   const getFiles = useCallback(() => {
     (async () => {
       try {
-        const response = await fetch('http://localhost:3010/v1/files', {
-          method: 'GET',
-        });
+        const options = { method: 'GET' };
+        const response = await requestor('/files', options);
 
-        const { result } = await response.json();
-
-        dispatch({ type: 'FILES_FETCHED', data: result });
+        dispatch({ type: 'FILES_FETCHED', data: response.result });
       } catch (e) {
-        console.error(e);
+        alert(e.message);
       }
     })();
   }, []);

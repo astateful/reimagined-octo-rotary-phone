@@ -6,18 +6,34 @@ import Router from '@koa/router';
 
 import routers from './routers/index.js';
 
-const loader = () => {
+const errorHandler = (koa) => {
+  koa.on('error', (e) => console.error(e));
+
+  return async (ctx, next) => {
+    try {
+      await next();
+    } catch (err) {
+      ctx.status = err.status || 500;
+      ctx.body = err.message;
+
+      ctx.app.emit('error', err, ctx);
+    }
+  };
+};
+
+const loader = (dataDir) => {
   const router = new Router({ prefix: '/v1' });
-  router.use('/files', routers.files().routes());
+  router.use('/files', routers.files(dataDir).routes());
+
+  const corsOptions = {
+    origin(ctx) {
+      return ctx.get('Origin') || '*';
+    },
+  };
 
   const koa = new Koa();
-  koa.use(
-    cors({
-      origin(ctx) {
-        return ctx.get('Origin') || '*';
-      },
-    })
-  );
+  koa.use(errorHandler(koa));
+  koa.use(cors(corsOptions));
   koa.use(router.routes());
 
   return http.createServer(koa.callback());

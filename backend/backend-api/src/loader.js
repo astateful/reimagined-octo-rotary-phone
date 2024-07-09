@@ -21,9 +21,9 @@ const errorHandler = (koa) => {
   };
 };
 
-const loader = (dataDir) => {
+const loader = (dataDir, mimeTypes) => {
   const router = new Router({ prefix: '/v1' });
-  router.use('/files', routers.files(dataDir).routes());
+  router.use('/files', routers.files(dataDir, mimeTypes).routes());
 
   const corsOptions = {
     origin(ctx) {

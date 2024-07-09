@@ -18,9 +18,7 @@ function makeOcrResponse(value) {
   return { result: 'This is read data' };
 }
 
-const supportedMimeTypes = ['image/jpg', 'image/jpeg'];
-
-const route = (dataDir) => {
+const route = (dataDir, mimeTypes) => {
   const router = new Router();
 
   const filesDir = path.join(dataDir, 'files');
@@ -40,7 +38,7 @@ const route = (dataDir) => {
       size: ctx.file.size,
     };
 
-    if (!supportedMimeTypes.includes(metadata.mimetype)) {
+    if (!mimeTypes.includes(metadata.mimetype)) {
       const error = new Error('Unsupported mime type');
       error.status = 400;
 
@@ -107,7 +105,7 @@ const route = (dataDir) => {
   });
 
   router.get('/mimeTypes', async (ctx) => {
-    ctx.body = { result: supportedMimeTypes };
+    ctx.body = { result: mimeTypes };
   });
 
   return router;

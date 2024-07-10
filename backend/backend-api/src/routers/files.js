@@ -45,23 +45,19 @@ const route = (dataDir, mimeTypes) => {
       throw error;
     }
 
-    await fs.writeFile(
-      path.join(filesDir, ctx.file.originalname),
-      ctx.file.buffer
-    );
-
-    await fs.writeFile(
-      path.join(metadataDir, `${ctx.file.originalname}.metadata.json`),
-      JSON.stringify(metadata)
-    );
-
     const randomValue = randomIntFromInterval(0, 100);
     const ocr = makeOcrResponse(randomValue);
 
-    await fs.writeFile(
-      path.join(ocrDir, `${ctx.file.originalname}.ocr.json`),
-      JSON.stringify(ocr)
+    const filePath = path.join(filesDir, ctx.file.originalname);
+    const ocrPath = path.join(ocrDir, `${ctx.file.originalname}.json`);
+    const metadataPath = path.join(
+      metadataDir,
+      `${ctx.file.originalname}.json`
     );
+
+    await fs.writeFile(filePath, ctx.file.buffer);
+    await fs.writeFile(metadataPath, JSON.stringify(metadata));
+    await fs.writeFile(ocrPath, JSON.stringify(ocr));
 
     ctx.body = { result: { metadata, ocr } };
   });
@@ -71,16 +67,14 @@ const route = (dataDir, mimeTypes) => {
 
     const result = await Promise.all(
       filenames.map(async (filename) => {
-        const metadataFilename = `${filename}.metadata.json`;
+        const metadataFilename = `${filename}.json`;
         const metadataPath = path.join(metadataDir, metadataFilename);
-
         const metadata = await fs
           .readFile(metadataPath, 'utf-8')
           .then(JSON.parse);
 
-        const ocrFilename = `${filename}.ocr.json`;
+        const ocrFilename = `${filename}.json`;
         const ocrPath = path.join(ocrDir, ocrFilename);
-
         const ocr = await fs.readFile(ocrPath, 'utf-8').then(JSON.parse);
 
         return { metadata, ocr };
@@ -90,15 +84,32 @@ const route = (dataDir, mimeTypes) => {
     ctx.body = { result };
   });
 
+  router.delete('/:originalname', async (ctx) => {
+    const { originalname } = ctx.params;
+
+    const filePath = path.join(filesDir, originalname);
+
+    const metadataFilename = `${originalname}.json`;
+    const metadataPath = path.join(metadataDir, metadataFilename);
+
+    const ocrFilename = `${originalname}.json`;
+    const ocrPath = path.join(ocrDir, ocrFilename);
+
+    await fs.unlink(metadataPath);
+    await fs.unlink(ocrPath);
+    await fs.unlink(filePath);
+
+    ctx.body = { result: true };
+  });
+
   router.get('/view/:originalname', async (ctx) => {
-    const result = await fs.readFile(
-      path.join(filesDir, ctx.params.originalname)
-    );
+    const filePath = path.join(filesDir, ctx.params.originalname);
 
-    const metadataFilename = `${ctx.params.originalname}.metadata.json`;
-    const metadatPath = path.join(metadataDir, metadataFilename);
+    const metadataFilename = `${ctx.params.originalname}.json`;
+    const metadataPath = path.join(metadataDir, metadataFilename);
 
-    const metadata = await fs.readFile(metadatPath, 'utf-8').then(JSON.parse);
+    const metadata = await fs.readFile(metadataPath, 'utf-8').then(JSON.parse);
+    const result = await fs.readFile(filePath);
 
     ctx.response.set('content-type', metadata.mimetype);
     ctx.response.body = result;

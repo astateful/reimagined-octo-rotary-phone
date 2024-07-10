@@ -34,7 +34,6 @@ function submitForm(form, url) {
         concat({ encoding: 'buffer' }, (body) => {
           onFinished(req, () => {
             resolve(body);
-            //cb(null, res, body);
           });
         })
       );
@@ -92,6 +91,13 @@ test('files, success', async (t) => {
 
   // TODO: test raw data...
   await rawViewResponse.text();
+
+  const deletionUrl = new URL('/v1/files/test.png', backendUrl);
+
+  const rawDeleteResponse = await fetch(deletionUrl, { method: 'delete' });
+  const deleteResponse = await rawDeleteResponse.json();
+
+  t.is(deleteResponse.result, true);
 });
 
 test('files, upload file, unsupported file type', async (t) => {

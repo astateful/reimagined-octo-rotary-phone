@@ -18,7 +18,7 @@ function makeOcrResponse(value) {
   return { result: 'This is read data' };
 }
 
-const route = (dataDir, mimeTypes) => {
+const route = (dataDir, mimeTypes, maxSize) => {
   const router = new Router();
 
   const filesDir = path.join(dataDir, 'files');
@@ -37,6 +37,13 @@ const route = (dataDir, mimeTypes) => {
       mimetype: ctx.file.mimetype,
       size: ctx.file.size,
     };
+
+    if (ctx.file.size > maxSize) {
+      const error = new Error('Unsupported file size');
+      error.status = 400;
+
+      throw error;
+    }
 
     if (!mimeTypes.includes(metadata.mimetype)) {
       const error = new Error('Unsupported mime type');

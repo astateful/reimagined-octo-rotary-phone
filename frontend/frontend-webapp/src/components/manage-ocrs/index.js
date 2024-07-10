@@ -26,8 +26,12 @@ function ManageOcrs({ mimeTypes }) {
   const onDrop = useCallback(
     (acceptedFiles) => {
       acceptedFiles.forEach((file) => {
-        if (accept[file.type]) createFile(file);
-        else alert(`${file.type} is not supported!`);
+        const isSizeValid = file.size < 1440000;
+        const isAccepted = !!accept[file.type];
+
+        if (!isAccepted) alert(`${file.type} is not supported.`);
+        else if (!isSizeValid) alert(`${file.type} is larger than 1440000.`);
+        else createFile(file);
       });
     },
     [createFile, accept]
@@ -48,9 +52,10 @@ function ManageOcrs({ mimeTypes }) {
     <div className={styles.manageOcrs}>
       <h1>AwesomeOCR</h1>
       <h2>File Upload</h2>
-      <h3>Supported File Types: {mimeTypes.join(', ')}</h3>
       <div {...getRootProps()} className={styles.uploadArea}>
         <input {...getInputProps()} />
+        <h3>Supported File Types: {mimeTypes.join(', ')}</h3>
+        <h3>Maximum File Size: {1440000 / 1000000}MB</h3>
         {isDragActive ? (
           <p>Drop the files here ...</p>
         ) : (

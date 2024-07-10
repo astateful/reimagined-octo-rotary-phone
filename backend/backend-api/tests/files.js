@@ -7,7 +7,7 @@ import onFinished from 'on-finished';
 import os from 'os';
 import test from 'ava';
 
-import server from '../src/index.js';
+import loader from '../src/index.js';
 
 const listen = (url, loader) =>
   Promise.resolve(loader).then(
@@ -47,11 +47,16 @@ function submitForm(form, url) {
 test.before('setup', async (t) => {
   const outputPath = await fs.promises.mkdtemp(`${os.tmpdir()}${sep}`);
 
-  const mimeTypes = ['image/png'];
+  const fileSize = 1440000;
+  const mimeTypes = ['image/png', 'image/jpeg'];
+
+  const logger = () => {};
+
+  const loaderInstance = loader(outputPath, mimeTypes, fileSize, logger);
 
   const backendPort = 50012;
   const backendUrl = new URL(`http://0.0.0.0:${backendPort}`);
-  const backendServer = await listen(backendUrl, server(outputPath, mimeTypes));
+  const backendServer = await listen(backendUrl, loaderInstance);
 
   t.context.backendUrl = backendUrl;
   t.context.backendServer = backendServer;
@@ -63,8 +68,9 @@ test('mime types', async (t) => {
   const response = await fetch(new URL('/v1/files/mimeTypes', backendUrl));
   const { result } = await response.json();
 
-  t.is(result.length, 1);
+  t.is(result.length, 2);
   t.is(result[0], 'image/png');
+  t.is(result[1], 'image/jpeg');
 });
 
 test('files, success', async (t) => {
@@ -114,6 +120,19 @@ test('files, upload file, unsupported file type', async (t) => {
   const rawResponse = await submitForm(form, url);
   const response = rawResponse.toString();
   t.is(response, 'Unsupported mime type');
+});
+
+test('files, upload file, greater than max size', async (t) => {
+  const { backendUrl } = t.context;
+
+  const form = new FormData();
+  form.append('file', file('test-too-large.jpg'));
+
+  const url = new URL('/v1/files', backendUrl);
+
+  const rawResponse = await submitForm(form, url);
+  const response = rawResponse.toString();
+  t.is(response, 'Unsupported file size');
 });
 
 test.after.always((t) => {

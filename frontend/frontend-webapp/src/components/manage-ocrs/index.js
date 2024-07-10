@@ -5,13 +5,14 @@ import { array } from 'prop-types';
 import { useDropzone } from 'react-dropzone';
 
 import ViewOcr from '../view-ocr';
+import styles from './styles.module.css';
 import { useFiles } from '../../services';
 
 const imageSrcEndpoint = (filename) =>
   `${process.env.NEXT_PUBLIC_API_URL}/files/view/${filename}`;
 
 function ManageOcrs({ mimeTypes }) {
-  const { createFile, getFiles, files } = useFiles();
+  const { createFile, getFiles, files, deleteFile } = useFiles();
 
   useEffect(() => {
     getFiles();
@@ -26,6 +27,11 @@ function ManageOcrs({ mimeTypes }) {
     [createFile]
   );
 
+  const onDelete = useCallback(
+    (filename) => deleteFile(filename),
+    [deleteFile]
+  );
+
   const accept = mimeTypes.reduce((acc, cur) => ({ ...acc, [cur]: [] }, {}));
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -35,18 +41,11 @@ function ManageOcrs({ mimeTypes }) {
   });
 
   return (
-    <div style={{ width: '1000px', margin: '0 auto' }}>
+    <div className={styles.manageOcrs}>
       <h1>AwesomeOCR</h1>
       <h2>File Upload</h2>
       <h3>Supported File Types: {mimeTypes.join(', ')}</h3>
-      <div
-        {...getRootProps()}
-        style={{
-          border: '2px dashed #000',
-          textAlign: 'center',
-          cursor: 'pointer',
-        }}
-      >
+      <div {...getRootProps()} className={styles.uploadArea}>
         <input {...getInputProps()} />
         {isDragActive ? (
           <p>Drop the files here ...</p>
@@ -55,12 +54,13 @@ function ManageOcrs({ mimeTypes }) {
         )}
       </div>
       <h2>Files</h2>
-      <table style={{ width: '100%' }}>
+      <table className={styles.filesArea}>
         <thead>
           <tr>
             <th>Filename</th>
             <th>Data</th>
             <th>OCR Result</th>
+            <th>Manage</th>
           </tr>
         </thead>
         <tbody>
@@ -75,6 +75,11 @@ function ManageOcrs({ mimeTypes }) {
               </td>
               <td>
                 <ViewOcr ocr={file.ocr} />
+              </td>
+              <td>
+                <button onClick={() => onDelete(file.metadata.originalname)}>
+                  Delete
+                </button>
               </td>
             </tr>
           ))}

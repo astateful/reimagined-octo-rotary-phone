@@ -1,4 +1,4 @@
-import { useCallback, useReducer } from 'react';
+import { useCallback, useMemo, useReducer } from 'react';
 
 const initialState = { data: [] };
 
@@ -10,6 +10,18 @@ const reducer = (state = initialState, action) => {
 
     case 'FILES_FETCHED': {
       return { ...state, data: action.data };
+    }
+
+    case 'FILE_DELETED': {
+      const i = state.data.findIndex(
+        (file) => file.metadata.originalname === action.data
+      );
+
+      if (i === -1) return state;
+
+      const data = state.data.filter((value, index) => index !== i);
+
+      return { ...state, data };
     }
 
     default: {
@@ -66,7 +78,23 @@ const useFiles = () => {
     })();
   }, []);
 
-  return { createFile, getFiles, files: state.data };
+  const deleteFile = useCallback((filename) => {
+    (async () => {
+      try {
+        const options = { method: 'DELETE' };
+        await requestor(`/files/${filename}`, options);
+
+        dispatch({ type: 'FILE_DELETED', data: filename });
+      } catch (e) {
+        alert(e.message);
+      }
+    })();
+  }, []);
+
+  return useMemo(
+    () => ({ createFile, getFiles, deleteFile, files: state.data }),
+    [createFile, getFiles, deleteFile, state.data]
+  );
 };
 
 export default useFiles;

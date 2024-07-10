@@ -1,0 +1,14 @@
+.manageOcrs {
+  width: 1200px;
+  margin: 0 auto;
+}
+
+.uploadArea {
+  border: 2px dashed #000;
+  text-align: center;
+  cursor: pointer;
+}
+
+.filesArea {
+  width: 100%;
+}

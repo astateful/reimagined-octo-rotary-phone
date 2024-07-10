@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { array } from 'prop-types';
 import { useDropzone } from 'react-dropzone';
 
@@ -18,21 +18,25 @@ function ManageOcrs({ mimeTypes }) {
     getFiles();
   }, [getFiles]);
 
+  const accept = useMemo(
+    () => mimeTypes.reduce((acc, cur) => ({ ...acc, [cur]: [] }), {}),
+    [mimeTypes]
+  );
+
   const onDrop = useCallback(
     (acceptedFiles) => {
       acceptedFiles.forEach((file) => {
-        createFile(file);
+        if (accept[file.type]) createFile(file);
+        else alert(`${file.type} is not supported!`);
       });
     },
-    [createFile]
+    [createFile, accept]
   );
 
   const onDelete = useCallback(
     (filename) => deleteFile(filename),
     [deleteFile]
   );
-
-  const accept = mimeTypes.reduce((acc, cur) => ({ ...acc, [cur]: [] }, {}));
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

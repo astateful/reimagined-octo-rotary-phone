@@ -1,6 +1,7 @@
-import path, { sep } from 'path';
+import path, { dirname, sep } from 'path';
 import FormData from 'form-data';
 import concat from 'concat-stream';
+import { fileURLToPath } from 'url';
 import fs from 'fs';
 import onFinished from 'on-finished';
 import os from 'os';
@@ -20,7 +21,9 @@ const listen = (url, loader) =>
   );
 
 const file = (name) => {
-  return fs.createReadStream(path.join(process.cwd(), 'test-data', name));
+  return fs.createReadStream(
+    path.join(dirname(fileURLToPath(import.meta.url)), '..', 'test-data', name)
+  );
 };
 
 function submitForm(form, url) {

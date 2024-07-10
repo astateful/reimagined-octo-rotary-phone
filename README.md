@@ -19,3 +19,9 @@ From the root of the repo, run in a new terminal window
 `pnpm -F frontend-webapp dev`
 
 This command starts the frontend on port 3009.
+
+### Tests
+
+Tests are available for the backend by command from root directory
+
+`pnpm test`

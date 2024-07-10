@@ -5,6 +5,13 @@ const initialState = { data: [] };
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case 'FILE_CREATED': {
+      const i = state.data.findIndex(
+        (file) =>
+          file.metadata.originalname === action.data.metadata.originalname
+      );
+
+      if (i !== -1) return state;
+
       return { ...state, data: [...state.data, action.data] };
     }
 

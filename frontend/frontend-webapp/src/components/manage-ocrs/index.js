@@ -12,7 +12,7 @@ const imageSrcEndpoint = (filename) =>
   `${process.env.NEXT_PUBLIC_API_URL}/files/view/${filename}`;
 
 function ManageOcrs({ mimeTypes }) {
-  const { createFile, getFiles, files, deleteFile } = useFiles();
+  const { createFile, getFiles, files, deleteFile, isUploading } = useFiles();
 
   useEffect(() => {
     getFiles();
@@ -46,6 +46,7 @@ function ManageOcrs({ mimeTypes }) {
     onDrop,
     accept,
     maxFiles: 1,
+    disabled: isUploading,
   });
 
   return (
@@ -54,13 +55,18 @@ function ManageOcrs({ mimeTypes }) {
       <h2>File Upload</h2>
       <div {...getRootProps()} className={styles.uploadArea}>
         <input {...getInputProps()} />
-        <h3>Supported File Types: {mimeTypes.join(', ')}</h3>
-        <h3>Maximum File Size: {1440000 / 1000000}MB</h3>
-        {isDragActive ? (
-          <p>Drop the files here ...</p>
-        ) : (
-          <p>Drag n drop some files here, or click here to select files</p>
+        {!isUploading && (
+          <>
+            <h3>Supported File Types: {mimeTypes.join(', ')}</h3>
+            <h3>Maximum File Size: {1440000 / 1000000}MB</h3>
+            {isDragActive ? (
+              <p>Drop the files here ...</p>
+            ) : (
+              <p>Drag n drop some files here, or click here to select files</p>
+            )}
+          </>
         )}
+        {isUploading && <p>Uploading...</p>}
       </div>
       <h2>Files</h2>
       <table className={styles.filesArea}>

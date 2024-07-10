@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useReducer } from 'react';
 
-const initialState = { data: [] };
+const initialState = { data: [], isUploading: false };
+
+const delay = (ts) => new Promise((resolve) => setTimeout(() => resolve(), ts));
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
@@ -13,6 +15,10 @@ const reducer = (state = initialState, action) => {
       if (i !== -1) return state;
 
       return { ...state, data: [...state.data, action.data] };
+    }
+
+    case 'FILE_UPLOADING': {
+      return { ...state, isUploading: action.data };
     }
 
     case 'FILES_FETCHED': {
@@ -62,8 +68,14 @@ const useFiles = () => {
         const formData = new FormData();
         formData.append('file', file);
 
+        dispatch({ type: 'FILE_UPLOADING', data: true });
+
         const options = { method: 'POST', body: formData };
         const response = await requestor('/files', options);
+
+        await delay(5000);
+
+        dispatch({ type: 'FILE_UPLOADING', data: false });
 
         dispatch({ type: 'FILE_CREATED', data: response.result });
       } catch (e) {
@@ -99,8 +111,14 @@ const useFiles = () => {
   }, []);
 
   return useMemo(
-    () => ({ createFile, getFiles, deleteFile, files: state.data }),
-    [createFile, getFiles, deleteFile, state.data]
+    () => ({
+      createFile,
+      getFiles,
+      deleteFile,
+      files: state.data,
+      isUploading: state.isUploading,
+    }),
+    [createFile, getFiles, deleteFile, state.data, state.isUploading]
   );
 };
 
